@@ -32,5 +32,17 @@ TEXTS = {
     "custom_variant_name": "✍️ Власний варіант (ввести нижче)",
     "label_custom_func": "Власне рівняння f(x):",
     "error_expr_title": "Помилка виразу",
-    "error_expr_message": "Некоректний формат рівняння:\n"
+    "error_expr_message": "Некоректний формат рівняння:\n",
+    "save_btn_text": "💾 Зберегти результати",
+    "plot_btn_text": "📈 Показати графік",
+    "save_file_title": "Зберегти результати",
+    "save_success_title": "Успіх",
+    "save_success_msg": "Результати успішно збережено у файл!",
+    "save_error_title": "Помилка збереження",
+    "plot_error_title": "Помилка побудови",
+    "file_header_title": "Лабораторна робота №1 — Чисельні методи",
+    "col_eps_file": "Похибка (eps)",
+    "col_iter_file": "Ітерації (n)",
+    "col_root_file": "Корінь (x)",
+    "col_func_file": "Значення f(x)"
 }
