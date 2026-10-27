@@ -1,6 +1,4 @@
 import math
-from functions import numerical_derivative
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -17,16 +15,23 @@ from numerical_methods.iteration import iteration
 from numerical_methods.newton import newtone
 
 # Імпортуємо словник функцій для різних варіантів
-from functions import VARIANTS
+from functions import VARIANTS, numerical_derivative
 
 # Імпортуємо функції для перевірки коректності введених даних
 from validators import validate_boundaries_and_domain, check_result_validity
 
+# Імпортуємо модулі збереження та графіків
+from export_utils import save_results_to_file, plot_function_graph
+
 # Створюємо головне вікно програми
 root = tk.Tk()
-# Задаємо іконку програми (файл icon.ico має лежати в папці з проєктом)
+
+# Задаємо іконку програми
 try:
     root.iconbitmap("feather.ico")
+    """
+    Автор Іконки: https://www.flaticon.com/ru/authors/iconixar
+    """
 except Exception:
     pass  # Якщо файл іконки раптом відсутній, програма не впаде, а піде далі
 root.title(TEXTS["window_title"])
@@ -72,20 +77,29 @@ entry_custom = ttk.Entry(input_frame, width=45)
 entry_custom.insert(0, "x**3 - 5*x + 2")
 entry_custom.grid(row=2, column=1, columnspan=3, padx=5, pady=5, sticky=tk.W)
 
+# Поле для введення власної похибки (дефолтно 0.0001)
+label_eps_input = ttk.Label(input_frame, text=TEXTS["label_eps"])
+label_eps_input.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+
+entry_eps = ttk.Entry(input_frame, width=15)
+entry_eps.insert(0, "0.0001")
+entry_eps.grid(row=3, column=1, padx=5, pady=5, sticky=tk.W)
+
 # Перемикачі методів
 method_var = tk.StringVar(value="dichotomy")
 
 radio_dichotomy = ttk.Radiobutton(input_frame, text=TEXTS["method_dichotomy"], variable=method_var, value="dichotomy")
-radio_dichotomy.grid(row=3, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_dichotomy.grid(row=4, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
 radio_iteration = ttk.Radiobutton(input_frame, text=TEXTS["method_iteration"], variable=method_var, value="iteration")
-radio_iteration.grid(row=3, column=2, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_iteration.grid(row=4, column=2, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
 radio_newton = ttk.Radiobutton(input_frame, text=TEXTS["method_newton"], variable=method_var, value="newton")
-radio_newton.grid(row=3, column=4, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_newton.grid(row=4, column=4, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
-# --- ФУНКЦІЯ РОЗРАХУНКУ ТА ЗАПОВНЕННЯ ТАБЛИЦІ ---
-def on_calculate():
+# --- ФУНКЦІЯ РОЗРАХУНКУ ТА ДОДАВАННЯ РЯДКА ---
+def on_calculate_single(clear_table=False):
+    """Виконує розрахунок для заданої похибки та додає рядок у таблицю."""
     try:
         # Усередині функції розрахунку:
         selected_variant = variant_combobox.get()
@@ -134,119 +148,71 @@ def on_calculate():
             status_var.set(TEXTS["status_validation_error"])
             return
 
+        # Зчитуємо введену користувачем похибку
+        try:
+            eps = float(entry_eps.get())
+            if eps <= 0:
+                raise ValueError()
+        except ValueError:
+            messagebox.showerror(TEXTS["error_eps_title"], TEXTS["error_eps_msg"])
+            return
+        
         selected_method = method_var.get()
         
-        # Очищуємо таблицю від старих результатів перед новим розрахунком
-        for item in tree.get_children():
-            tree.delete(item)
-            
-        # Вимоги лабораторної: обчислення для трьох значень похибки
-        eps_values = [0.01, 0.001, 0.0001]
+        # Якщо потрібно очистити таблицю перед розрахунком (наприклад, при першому натисканні або повній заміні)
+        if clear_table:        
+            for item in tree.get_children():
+                tree.delete(item)
         
-        for eps in eps_values:
-            # Передаємо функції у методи:
-            if selected_method == "dichotomy":
-                root_x, n_iter = dichotomy(a, b, eps, funcs["f"])
-            elif selected_method == "iteration":
-                root_x, n_iter = iteration(a, b, eps, funcs["phi"], funcs["phi_prime"])
-            elif selected_method == "newton":
-                root_x, n_iter = newtone(a, b, eps, funcs["f"], funcs["f_1"])
+        # Обчислення обраним методом
+        if selected_method == "dichotomy":
+            root_x, n_iter = dichotomy(a, b, eps, funcs["f"])
+        elif selected_method == "iteration":
+            root_x, n_iter = iteration(a, b, eps, funcs["phi"], funcs["phi_prime"])
+        elif selected_method == "newton":
+            root_x, n_iter = newtone(a, b, eps, funcs["f"], funcs["f_1"])
+        else:
+            return
+        
+        # Перевірка валідності результату
+        check_result_validity(root_x)
 
-            # Перевірка валідності результату
-            check_result_validity(root_x)
-
-            # Значення функції для таблиці:
-            func_val = funcs["f"](root_x)
-            
-            # Додаємо рядок у таблицю Treeview
-            tree.insert("", tk.END, values=(str(eps), str(n_iter), f"{root_x:.6f}", f"{func_val:.6f}"))
-            
+        # Значення функції для таблиці:
+        func_val = funcs["f"](root_x)
+        
+        # Додаємо рядок у таблицю Treeview
+        tree.insert("", tk.END, values=(str(eps), str(n_iter), f"{root_x:.6f}", f"{func_val:.6f}"))
         status_var.set(TEXTS["status_done"])
         
     except Exception as e:
         messagebox.showerror(TEXTS["error_title"], f"{TEXTS['error_message']}{str(e)}")
         status_var.set(TEXTS["status_calc_error"])
 
-# --- ФУНКЦІЇ ЗБЕРЕЖЕННЯ РЕЗУЛЬТАТІВ ТА ПОБУДОВИ ГРАФІКА ---
-def save_results_to_file():
-    """Зберігає поточні дані з таблиці Treeview у текстовий файл з урахуванням локалізації."""
-    file_path = filedialog.asksaveasfilename(
-        defaultextension=".txt",
-        filetypes=[("Text Files", "*.txt"), ("CSV Files", "*.csv"), ("All Files", "*.*")],
-        title=TEXTS["save_file_title"]
-    )
-    if not file_path:
-        return
+def on_calculate_default_table():
+    """Розраховує три стандартні похибки з методички (0.01, 0.001, 0.0001) та заповнює таблицю."""
+    for item in tree.get_children():
+        tree.delete(item)
     
-    try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(f"{TEXTS['file_header_title']}\n")
-            f.write("-" * 65 + "\n")
-            f.write(f"{TEXTS['col_eps_file']:<18} | {TEXTS['col_iter_file']:<15} | {TEXTS['col_root_file']:<18} | {TEXTS['col_func_file']:<18}\n")
-            f.write("-" * 65 + "\n")
-            
-            for item in tree.get_children():
-                vals = tree.item(item, "values")
-                f.write(f"{vals[0]:<18} | {vals[1]:<15} | {vals[2]:<18} | {vals[3]:<18}\n")
-                
-        messagebox.showinfo(TEXTS["save_success_title"], TEXTS["save_success_msg"])
-    except Exception as e:
-        messagebox.showerror(TEXTS["save_error_title"], f"{str(e)}")
-
-def plot_function_graph():
-    """Будує графік функції на відрізку [a, b] з урахуванням обраного варіанта чи власного рівняння."""
-    try:
-        a = float(entry_a.get())
-        b = float(entry_b.get())
-        selected_variant = variant_combobox.get()
-        
-        # Визначаємо функцію залежно від обраного у випадаючому списку варіанта
-        if selected_variant == TEXTS["custom_variant_name"]:
-            custom_str = entry_custom.get()
-            f_to_plot = lambda x: eval(custom_str, {
-                "__builtins__": {}, 
-                "x": x, 
-                "math": math, 
-                "sin": math.sin, 
-                "cos": math.cos, 
-                "tan": math.tan, 
-                "log": math.log, 
-                "exp": math.exp, 
-                "sqrt": math.sqrt, 
-                "tanh": math.tanh, 
-                "cosh": math.cosh
-            })
-        else:
-            f_to_plot = VARIANTS[selected_variant]["f"]
-            
-        # Генеруємо точки для графіка
-        x_vals = np.linspace(a, b, 400)
-        y_vals = [f_to_plot(val) for val in x_vals]
-        
-        # Побудова графіка за допомогою matplotlib
-        plt.figure(figsize=(8, 5))
-        plt.plot(x_vals, y_vals, label="f(x)", color="#1f77b4", linewidth=2)
-        plt.axhline(0, color="black", linewidth=1, linestyle="--")
-        plt.title(f"{TEXTS['table_frame_title']}: {selected_variant}")
-        plt.xlabel("x")
-        plt.ylabel("f(x)")
-        plt.grid(True, linestyle=":", alpha=0.7)
-        plt.legend()
-        plt.show()
-        
-    except Exception as e:
-        messagebox.showerror(TEXTS["plot_error_title"], f"{str(e)}")
+    default_eps_values = [0.01, 0.001, 0.0001]
+    for val in default_eps_values:
+        entry_eps.delete(0, tk.END)
+        entry_eps.insert(0, str(val))
+        on_calculate_single(clear_table=False)
 
 # Кнопка запуску розрахунку
-btn_calculate = ttk.Button(input_frame, text=TEXTS["btn_calc"], command=on_calculate)
-btn_calculate.grid(row=5, column=0, columnspan=2, padx=5, pady=10, sticky=tk.EW)
+btn_calculate = ttk.Button(input_frame, text=TEXTS["btn_calc"], command=on_calculate_default_table)
+btn_calculate.grid(row=5, column=0, padx=5, pady=10, sticky=tk.EW)
+
+# Кнопка додавання рядка з власною похибкою
+btn_add_row = ttk.Button(input_frame, text=TEXTS["btn_add_eps"], command=lambda: on_calculate_single(clear_table=False))
+btn_add_row.grid(row=5, column=1, padx=5, pady=10, sticky=tk.EW)
 
 # Кнопка збереження результатів у файл
-btn_save = ttk.Button(input_frame, text=TEXTS["save_btn_text"], command=save_results_to_file)
+btn_save = ttk.Button(input_frame, text=TEXTS["save_btn_text"], command=lambda: save_results_to_file(tree))
 btn_save.grid(row=5, column=2, padx=5, pady=10, sticky=tk.EW)
 
 # Кнопка побудови графіка
-btn_plot = ttk.Button(input_frame, text=TEXTS["plot_btn_text"], command=plot_function_graph)
+btn_plot = ttk.Button(input_frame, text=TEXTS["plot_btn_text"], command=lambda: plot_function_graph(entry_a, entry_b, variant_combobox, entry_custom))
 btn_plot.grid(row=5, column=3, padx=5, pady=10, sticky=tk.EW)
 
 # --- ТАБЛИЦЯ РЕЗУЛЬТАТІВ (Treeview) ---

@@ -1,7 +1,7 @@
 # lang_ua.py
 
 TEXTS = {
-    "window_title": "Лабораторна робота №1 — Чисельні методи",
+    "window_title": "Чисельне розв'язування нелінійних рівнянь",
     "input_frame_title": " Введення початкових даних ",
     "label_a": "Межа a:",
     "label_b": "Межа b:",
@@ -29,12 +29,12 @@ TEXTS = {
     "warn_bounds_message": "Ліва межа 'a' повинна бути меншою за праву межу 'b'!",
     "error_not_converged": "Метод не збігся на заданому відрізку або досяг області невизначеності (NaN / Inf).",
     "status_val_error": "Помилка: перевірте вхідні межі.",
-    "custom_variant_name": "✍️ Власний варіант (ввести нижче)",
+    "custom_variant_name": "Власний варіант (ввести нижче)",
     "label_custom_func": "Власне рівняння f(x):",
     "error_expr_title": "Помилка виразу",
     "error_expr_message": "Некоректний формат рівняння:\n",
-    "save_btn_text": "💾 Зберегти результати",
-    "plot_btn_text": "📈 Показати графік",
+    "save_btn_text": "Зберегти результати",
+    "plot_btn_text": "Показати графік",
     "save_file_title": "Зберегти результати",
     "save_success_title": "Успіх",
     "save_success_msg": "Результати успішно збережено у файл!",
@@ -44,5 +44,9 @@ TEXTS = {
     "col_eps_file": "Похибка (eps)",
     "col_iter_file": "Ітерації (n)",
     "col_root_file": "Корінь (x)",
-    "col_func_file": "Значення f(x)"
+    "col_func_file": "Значення f(x)",
+    "label_eps": "Похибка (ε):",
+    "btn_add_eps": "Додати рядок",
+    "error_eps_title": "Помилка похибки",
+    "error_eps_msg": "Введіть коректне числове значення для похибки (ε)!"
 }
