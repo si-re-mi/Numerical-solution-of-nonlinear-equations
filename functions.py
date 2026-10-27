@@ -1,4 +1,5 @@
 import math
+from lang.lang_ua import TEXTS
 
 def numerical_derivative(f, h=1e-5):
     """
@@ -9,6 +10,13 @@ def numerical_derivative(f, h=1e-5):
 
 # Словник усіх варіантів з методички (Група 1 та Група 2)
 VARIANTS = {
+    # --- КОРИСТУВАЦЬКИЙ ВАРІАНТ ---
+    TEXTS["custom_variant_name"]: {
+        "f": None,
+        "phi": None,
+        "f_1": None,
+        "phi_prime": None
+    },
     # --- ГРУПА ЗАВДАНЬ 1 ---
     "Група 1 №1: x³ + x² - 5x + 2 = 0": {
         "f": lambda x: x**3 + x**2 - 5*x + 2,

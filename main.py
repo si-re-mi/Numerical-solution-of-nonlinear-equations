@@ -1,3 +1,6 @@
+import math
+from functions import numerical_derivative
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -53,24 +56,64 @@ variant_combobox = ttk.Combobox(input_frame, values=list(VARIANTS.keys()), width
 variant_combobox.grid(row=1, column=1, columnspan=3, padx=5, pady=5, sticky=tk.W)
 variant_combobox.current(0)  # Встановлюємо перший варіант за замовчуванням
 
+# Поле для введення власного рівняння
+label_custom = ttk.Label(input_frame, text=TEXTS["label_custom_func"])
+label_custom.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+entry_custom = ttk.Entry(input_frame, width=45)
+entry_custom.insert(0, "x**3 - 5*x + 2")
+entry_custom.grid(row=2, column=1, columnspan=3, padx=5, pady=5, sticky=tk.W)
+
 # Перемикачі методів
 method_var = tk.StringVar(value="dichotomy")
 
 radio_dichotomy = ttk.Radiobutton(input_frame, text=TEXTS["method_dichotomy"], variable=method_var, value="dichotomy")
-radio_dichotomy.grid(row=2, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_dichotomy.grid(row=3, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
 radio_iteration = ttk.Radiobutton(input_frame, text=TEXTS["method_iteration"], variable=method_var, value="iteration")
-radio_iteration.grid(row=2, column=2, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_iteration.grid(row=3, column=2, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
 radio_newton = ttk.Radiobutton(input_frame, text=TEXTS["method_newton"], variable=method_var, value="newton")
-radio_newton.grid(row=3, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
+radio_newton.grid(row=3, column=4, columnspan=2, sticky=tk.W, padx=5, pady=5)
 
 # --- ФУНКЦІЯ РОЗРАХУНКУ ТА ЗАПОВНЕННЯ ТАБЛИЦІ ---
 def on_calculate():
     try:
         # Усередині функції розрахунку:
         selected_variant = variant_combobox.get()
-        funcs = VARIANTS[selected_variant]
+
+        # Перевіряємо, чи обрано власний варіант
+        if selected_variant == TEXTS["custom_variant_name"]:
+            custom_str = entry_custom.get()
+            try:
+                # Створюємо безпечну лямбда-функцію з підтримкою модуля math
+                f_custom = lambda x, expr=custom_str: eval(expr, {
+                    "__builtins__": {}, 
+                    "x": x, 
+                    "math": math, 
+                    "sin": math.sin, 
+                    "cos": math.cos, 
+                    "tan": math.tan, 
+                    "log": math.log, 
+                    "exp": math.exp, 
+                    "sqrt": math.sqrt, 
+                    "tanh": math.tanh, 
+                    "cosh": math.cosh
+                })
+                
+                # Завдяки чисельному диференціюванню похідні для Ньютона та ітерацій створюються автоматично!
+                funcs = {
+                    "f": f_custom,
+                    "phi": lambda x: x - 0.1 * f_custom(x),  # базовий ітераційний зсув
+                    "f_1": numerical_derivative(f_custom),
+                    "phi_prime": numerical_derivative(lambda x: x - 0.1 * f_custom(x))
+                }
+            except Exception as e:
+                messagebox.showerror(TEXTS["error_expr_title"], f"{TEXTS['error_expr_message']}{str(e)}")
+                status_var.set("Помилка у формулі.")
+                return
+        else:
+            funcs = VARIANTS[selected_variant]
 
         status_var.set(TEXTS["status_calculating"])
         
@@ -119,7 +162,7 @@ def on_calculate():
 
 # Кнопка запуску розрахунку
 btn_calculate = ttk.Button(input_frame, text=TEXTS["btn_calc"], command=on_calculate)
-btn_calculate.grid(row=4, column=0, columnspan=4, pady=10)
+btn_calculate.grid(row=5, column=0, columnspan=4, pady=10)
 
 # --- ТАБЛИЦЯ РЕЗУЛЬТАТІВ (Treeview) ---
 result_frame = ttk.LabelFrame(root, text=TEXTS["table_frame_title"])

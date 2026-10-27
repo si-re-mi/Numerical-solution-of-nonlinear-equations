@@ -28,5 +28,9 @@ TEXTS = {
     "warn_bounds_title": "Помилка вхідних даних",
     "warn_bounds_message": "Ліва межа 'a' повинна бути меншою за праву межу 'b'!",
     "error_not_converged": "Метод не збігся на заданому відрізку або досяг області невизначеності (NaN / Inf).",
-    "status_val_error": "Помилка: перевірте вхідні межі."
+    "status_val_error": "Помилка: перевірте вхідні межі.",
+    "custom_variant_name": "✍️ Власний варіант (ввести нижче)",
+    "label_custom_func": "Власне рівняння f(x):",
+    "error_expr_title": "Помилка виразу",
+    "error_expr_message": "Некоректний формат рівняння:\n"
 }
