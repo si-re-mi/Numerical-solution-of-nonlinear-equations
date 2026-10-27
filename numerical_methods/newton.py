@@ -18,7 +18,7 @@ def newtone(a, b, eps):
     Приймає межі відрізка [a, b] та похибку eps.
     Повертає знайдений корінь та кількість ітерацій.
     """
-    x_old = (a + b) / 2
+    x_old = a
     x_new = x_old - (f(x_old) / f_1(x_old))
     n = 1
     while abs(x_new - x_old) > eps:
