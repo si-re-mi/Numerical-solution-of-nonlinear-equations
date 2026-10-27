@@ -9,7 +9,12 @@ from lang.lang_ua import TEXTS
 from numerical_methods.dichotomy import dichotomy
 from numerical_methods.iteration import iteration
 from numerical_methods.newton import newtone
+
+# Імпортуємо словник функцій для різних варіантів
 from functions import VARIANTS
+
+# Імпортуємо функції для перевірки коректності введених даних
+from validators import validate_boundaries_and_domain, check_result_validity
 
 # Створюємо головне вікно програми
 root = tk.Tk()
@@ -18,7 +23,7 @@ root.geometry("800x550")
 
 # --- РЯДОК СТАНУ (Status Bar) ---
 status_var = tk.StringVar()
-status_var.set("Готово до роботи.")
+status_var.set(TEXTS["status_ready"])
 status_bar = ttk.Label(root, textvariable=status_var, relief=tk.SUNKEN, anchor=tk.W)
 status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -41,7 +46,7 @@ entry_b.insert(0, "2")
 entry_b.grid(row=0, column=3, padx=5, pady=5)
 
 # --- ВИБІР ВАРІАНТА (РІВНЯННЯ) ---
-label_variant = ttk.Label(input_frame, text="Варіант:")
+label_variant = ttk.Label(input_frame, text=TEXTS["label_variant"])
 label_variant.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
 
 variant_combobox = ttk.Combobox(input_frame, values=list(VARIANTS.keys()), width=45, state="readonly")
@@ -72,6 +77,12 @@ def on_calculate():
         # Отримуємо введені користувачем межі та обраний метод
         a = float(entry_a.get())
         b = float(entry_b.get())
+
+        # --- ВИКОРИСТОВУЄМО ВАЛІДАТОР ---
+        if not validate_boundaries_and_domain(selected_variant, a, b):
+            status_var.set(TEXTS["status_validation_error"])
+            return
+
         selected_method = method_var.get()
         
         # Очищуємо таблицю від старих результатів перед новим розрахунком
@@ -89,7 +100,10 @@ def on_calculate():
                 root_x, n_iter = iteration(a, b, eps, funcs["phi"], funcs["phi_prime"])
             elif selected_method == "newton":
                 root_x, n_iter = newtone(a, b, eps, funcs["f"], funcs["f_1"])
-                
+
+            # Перевірка валідності результату
+            check_result_validity(root_x)
+
             # Значення функції для таблиці:
             func_val = funcs["f"](root_x)
             
@@ -100,7 +114,7 @@ def on_calculate():
         
     except Exception as e:
         messagebox.showerror(TEXTS["error_title"], f"{TEXTS['error_message']}{str(e)}")
-        status_var.set("Помилка обчислення.")
+        status_var.set(TEXTS["status_calc_error"])
 
 
 # Кнопка запуску розрахунку
