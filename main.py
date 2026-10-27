@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 # Імпортуємо наш словник текстів
 from lang.lang_ua import TEXTS

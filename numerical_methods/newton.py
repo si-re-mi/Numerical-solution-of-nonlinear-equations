@@ -11,6 +11,20 @@ def f_1(x):
     """
     return 3*x**2 + 2*x - 5
 
+def find_initial_approximation(a, b):
+    """
+    Автоматично обирає безпечну початкову точку на відрізку [a, b]
+    для методу Ньютона, щоб уникнути ділення на нуль або розбіжності.
+    """
+    # Перевіряємо лівий кінець (a)
+    if f_1(a) != 0:
+        return a
+    # Перевіряємо правий кінець (b)
+    elif f_1(b) != 0:
+        return b
+    else:
+        # Якщо раптом на кінцях похідна нульова, беремо зміщену середину
+        return (a + b) / 2 + 0.01
 
 def newtone(a, b, eps):
     """
@@ -18,11 +32,15 @@ def newtone(a, b, eps):
     Приймає межі відрізка [a, b] та похибку eps.
     Повертає знайдений корінь та кількість ітерацій.
     """
-    x_old = a
+    # Автоматично обираємо безпечну початкову точку
+    x_old = find_initial_approximation(a, b)
     x_new = x_old - (f(x_old) / f_1(x_old))
     n = 1
     while abs(x_new - x_old) > eps:
         x_old = x_new
+        # Захист від ділення на нуль під час ітерацій
+        if f_1(x_old) == 0:
+            break
         x_new = x_old - (f(x_old) / f_1(x_old))                   
         n = n + 1
     return (x_new, n)
