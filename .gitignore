@@ -1,2 +1,12 @@
-# Кеш Python
+# Python bytecode
 __pycache__/
+*.pyc
+
+# PyInstaller build folders and specs
+build/
+dist/
+*.spec
+
+# System files
+.DS_Store
+Thumbs.db

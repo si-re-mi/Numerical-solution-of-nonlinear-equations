@@ -28,7 +28,7 @@ root = tk.Tk()
 
 # Задаємо іконку програми
 try:
-    root.iconbitmap("feather.ico")
+    root.iconbitmap("feather_2.ico")
     """
     Автор Іконки: https://www.flaticon.com/ru/authors/iconixar
     """
